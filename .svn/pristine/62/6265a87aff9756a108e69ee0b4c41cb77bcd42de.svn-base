@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>USGS Short-Term Network Flood Data Viewer</title>
+    
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <!--<meta http-equiv="X-UA-Compatible" content="IE=7,IE=9">-->
+    <!--The viewport meta tag is used to improve the presentation and behavior of the samples on iOS devices-->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <meta name="description" content="Web map application that displays coastal and riverine flooding data collected by the USGS during flood events.">
+    
+    <!-- ArcGIS Javascript API and dojo theme references (update number to keep most current version) -->
+    <link rel="stylesheet" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.5/js/dojo/dijit/themes/claro/claro.css">
+	 <link rel="stylesheet" href="https://js.arcgis.com/3.10/js/esri/css/esri.css">
+    
+    <!-- references to JS files of modules used -->
+    <script src="js/geocoder.js" type="text/javascript"></script>
+    <script src="js/geolocator.js" type="text/javascript"></script>
+    <script src="../STNResources/STNPubLayers.js" type="text/javascript" defer></script>
+    
+   <!-- Style sheets -->
+    <link rel="stylesheet" media="screen" type="text/css" href="styles/main.css"/>
+    <link rel="stylesheet" media="only screen and (max-device-width: 480px)" type="text/css" href="styles/handheld.css"/>
+    <link rel="stylesheet" type="text/css" href="wim/css/wim.css" defer>
+    <link rel="stylesheet" type="text/css" href="modules/css/modules.css" defer>
+
+    <!--<script data-dojo-config="async: true, parseOnLoad: true,
+        packages: [ {name: 'modules', location: location.pathname.replace(/\/[^/]+$/, '') + '/modules'}, {name: 'wim', location: location.pathname.replace(/\/[^/]+$/, '') + '/wim'}]"
+    >
+    </script>-->
+
+    <!--<script data-dojo-config="async: true, parseOnLoad: true, packages: [ {name: 'modules', location: location.pathname.replace(/\/[^/]+$/, '') + '/modules'}, {name: 'wim', location: location.pathname.replace(/\/[^/]+$/, '') + '/wim'}]" src="http://js.arcgis.com/3.10/">
+    </script>-->
+
+    <script type="text/javascript">
+
+      var basePath = location.pathname.replace(/\/[^/]+$/, "");
+  		if (basePath.substr( basePath.length - 1, 1) != "/") { basePath += "\/";}
+  		var dojoConfig = {
+        async: true,
+        parseOnLoad: false,
+  			 packages: [
+           { name: "modules", location: basePath + "modules" },
+  			 	{ name: "wim",location: basePath + "wim"}
+         ]
+      };
+
+    </script>
+
+    <!-- IMPORTANT:  ArcGIS Javascript API reference -->
+	  <script src="http://js.arcgis.com/3.10/"></script>
+    <!-- IMPORTANT: Mapper JS file  -->
+    <script src="js/STNPublic.js" type="text/javascript"></script>    
+
+    <script type="text/javascript">
+    require([
+    "dojo/parser",
+    "dojo/ready"
+      ], function(
+      parser,
+      ready
+    ) {
+
+      ready(function() {
+        parser.parse();
+      });
+
+    });
+    </script>
+</head>
+    
+<body class="claro">
+	<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline',gutters:false" style="width:100%;height:100%;margin:0;">
+        <div id="map" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0;">
+        
+        	<div id="refreshScreen" data-dojo-type="wim/RefreshScreen" data-dojo-props="attachedMapID: 'map'"></div>
+            
+            <div id="basemapSelector" >
+              <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'<img src=\'images/basemap_new_small.png\'> Basemaps', closable:false, open:false">
+                <div data-dojo-type="dijit/layout/ContentPane" style="width:380px; height:360px; overflow:auto;">
+                    <div id="basemapGallery" ></div>
+                </div>
+              </div>
+            </div>
+           
+           <div id="header">
+                <div id="headerLogo">
+                	<div id="usgsLogoDiv">
+                		<img id="usgsLogo" alt="USGS Logo" src="images/usgsLogo.png" title="USGS Links"/>
+                	</div>                
+                    <div id="titles">
+                    	<div id="betaTitle">Coastal and Riverine Flood Event Data Viewer</div>
+                        <div id="title">STN</div>
+                        <div id="titleSeparator">:</div>
+                        <div id="subTitle">Short-Term Network</div>
+                    </div>
+                 </div>
+           </div>
+              
+              
+           <div id="disclaimer" data-dojo-type="wim/Disclaimer" data-dojo-props="region:'center'"></div>
+              
+           <div id="extentSelector" data-dojo-type="wim/ExtentNav" data-dojo-props="initExtent: map.extent, attachedMapID: 'map'"></div>
+
+           
+           <div id="latLngScaleBar" data-dojo-type="wim/LatLngScale" data-dojo-props="map: map"></div>
+            
+           <div id="geocodeBar"> 
+               <input id="geocode" type="text" name="search" onKeyPress="enterKeyLocate(event)" placeholder="Find address or place" />
+               <input id="searchIcon" type="image" src="images/searchIcon.png" alt="Submit" onClick="locate()" />                
+           </div>
+          
+           <div id="userTools">
+
+              <div id="availableLayers" data-dojo-type="wim/CollapsingContainer" data-dojo-props="title:'MAP LAYERS'">
+                <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="title:'Click to toggle'">
+                    <div id="toggle" style="position: relative;" ></div>
+                </div>
+                <div id="legendHeader">Explanation</div>
+                    <div id="legend" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="title:'Explanation',selected:true">
+                        <div id="legendDiv"></div>
+                    </div>
+              </div>
+              <div id="sensorFilterBox" data-dojo-type="wim/CollapsingContainer" data-dojo-props="title:'FILTER', startCollapsed:true">
+                <label> Event </label>
+                <br/><select id="eventSelectInput" data-dojo-type="dijit/form/FilteringSelect" required="false" style="width:260px;font-size:12px;" name="'event'" value="'All'" searchAttr="eventName" autoComplete="true" ignoreCase="true" onChange="filterSensors()" fetchProperties="{sort:[{attribute:'event', descending:false}]}" ></select>
+                <br/><label>State</label>
+                <br/><select id="stateSelectInput" data-dojo-type="dijit/form/FilteringSelect" required="false" style="width:260px;font-size:12px;" name="'state'" value="'All'" searchAttr="stateOption" autoComplete="true" ignoreCase="true" onChange="filterSensors()" fetchProperties="{sort:[{attribute:'state', descending:false}]}" ></select>
+                <br/><label>County</label>
+                <br/><select id="countySelectInput" data-dojo-type="dijit/form/FilteringSelect" required="false" style="width:260px;font-size:12px;" name="'county'" value="'All'" searchAttr="countyOption" autoComplete="true" ignoreCase="true" onChange="filterSensors()" fetchProperties="{sort:[{attribute:'county', descending:false}]}" ></select>
+                
+      
+                
+                <br/><div id="submitButtonDiv">
+                        <button id="sensorSubmitButton" class="submitButton" type="button" onclick="executeFilter()" >Submit</button>
+                        <button id="sensorClearButton" class="clearButton" type="button" onclick="clearSelections()">Clear Selection</button>
+                </div>
+              </div>
+            
+            </div>
+
+            <div id="loadingScreen" data-dojo-type="wim/LoadingScreen" data-dojo-props="region:'center', attachedMapID: 'map'" ></div>
+
+	          
+        </div>
+	</div>
+</body>
+</html>

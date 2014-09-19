@@ -1,0 +1,57 @@
+// 03.06.13 -ESM- Created.
+// 03.11.13 -ESM- Added gif div within dijit to increase display speed.
+
+/*
+	Copyright: 2013 WiM - USGS
+	Author: Erik Myers USGS Wisconsin Internet Mapping
+	Created: March, 06 2013
+*/
+
+define([
+	"dojo/_base/declare",
+	"dijit/_WidgetBase",
+	"dijit/_TemplatedMixin",
+	"dijit/_Container",
+	"dojo/dom",
+	"dojo/dom-construct",
+	"dojo/ready",
+	"dojo/parser",
+	"dojo/text!./templates/LoadingScreen.html",
+	"dojo/domReady!"
+], function(
+	declare,
+	_WidgetBase, 
+	_TemplatedMixin,
+	_Container,
+	dom,
+	domConstruct,
+	ready,
+	parser,
+	template
+) {
+     return declare( "wim/LoadingScreen", [_WidgetBase, _TemplatedMixin], {
+
+     	templateString: template,
+     	//declaredClass: "wim/LoadingScreen",
+	    baseClass: "loadingScreen",
+	    attachedMapID: null,
+
+	    constructor: function () {
+
+		    console.log("LoadingScreen wijit created");
+
+		domConstruct.create('img', {
+				id: 'loadingScreenGraphic',
+				src: 'images/animated_loading116.gif',
+			}, dom.byId('loadingScreen'));
+	    },
+		
+		postCreate: function(){
+		}
+    });
+
+     ready(function(){
+     	parser.parse();
+     });
+});
+
