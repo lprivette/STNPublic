@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>USGS Short-Term Network Flood Data Viewer</title>
+	<title>Flood Event Viewer | USGS</title>
     
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <!--<meta http-equiv="X-UA-Compatible" content="IE=7,IE=9">-->
@@ -21,7 +21,7 @@
    <!-- Style sheets -->
     <link rel="stylesheet" media="screen" type="text/css" href="styles/main.css"/>
     <link rel="stylesheet" media="only screen and (max-device-width: 480px)" type="text/css" href="styles/handheld.css"/>
-    <link rel="stylesheet" type="text/css" href="wim/css/wim.css" defer>
+    <link rel="stylesheet" type="text/css" href="wim/css/wim.css" >
 
     <!--<script data-dojo-config="async: true, parseOnLoad: true,
         packages: [ {name: 'modules', location: location.pathname.replace(/\/[^/]+$/, '') + '/modules'}, {name: 'wim', location: location.pathname.replace(/\/[^/]+$/, '') + '/wim'}]"
@@ -94,10 +94,10 @@
                 		<img id="usgsLogo" alt="USGS Logo" src="images/usgsLogo.png" title="USGS Links"/>
                 	</div>                
                     <div id="titles">
-                    	<div id="betaTitle">Coastal and Riverine Flood Event Data Viewer</div>
-                        <div id="title">STN</div>
+                    	<div id="betaTitle">Coastal and Riverine Flood Event Data</div>
+                        <div id="title"> FloodView</div>
                         <div id="titleSeparator">:</div>
-                        <div id="subTitle">Short-Term Network</div>
+                        <div id="subTitle">Flood Event Viewer</div>
                     </div>
                  </div>
            </div>
@@ -126,7 +126,7 @@
                         <div id="legendDiv"></div>
                     </div>
               </div>
-              <div id="sensorFilterBox" data-dojo-type="wim/CollapsingContainer" data-dojo-props="title:'FILTER', startCollapsed:true">
+              <div id="sensorFilterBox" data-dojo-type="wim/CollapsingContainer" data-dojo-props="title:' SENSOR FILTER', startCollapsed:true">
                 <label> Event </label>
                 <br/><select id="eventSelectInput" data-dojo-type="dijit/form/FilteringSelect" required="false" style="width:260px;font-size:12px;" name="'event'" value="'All'" searchAttr="eventName" autoComplete="true" ignoreCase="true" onChange="filterSensors()" fetchProperties="{sort:[{attribute:'event', descending:false}]}" ></select>
                 <br/><label>State</label>

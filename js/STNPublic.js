@@ -104,19 +104,33 @@ require([
 	require([
 	  "esri/tasks/query",
 	  "esri/layers/FeatureLayer",
-	  "dojo/data/ItemFileReadStore"
+	  "dojo/data/ItemFileReadStore",
+	  "dojo/ready",
+      "dijit/layout/BorderContainer",
+      "dijit/layout/ContentPane",
+      "dijit/form/FilteringSelect",
+      "dijit/TitlePane",
+      "dijit/Dialog",
+      "dijit/form/Button"
 	], function(
 	  Query,
 	  FeatureLayer,
-	  ItemFileReadStore) {
+	  ItemFileReadStore,
+	  BorderContainer,
+      ContentPane,
+      FilteringSelect,
+      TitlePane,
+      Dialog,
+      Button
+      ) {
 
 
 		///tables for sensors filter
-		var eventList = new FeatureLayer("http://ec2-54-83-136-99.compute-1.amazonaws.com:6080/arcgis/rest/services/STN/Sensors/MapServer/9", { mode: FeatureLayer.MODE_ONDEMAND, outFields: ["*"]});
+		var eventList = new FeatureLayer(mapServicesRoot + "/Sensors/MapServer/9", { mode: FeatureLayer.MODE_ONDEMAND, outFields: ["*"]});
 
-		var stateList = new FeatureLayer("http://ec2-54-83-136-99.compute-1.amazonaws.com:6080/arcgis/rest/services/STN/Sensors/MapServer/8", { mode: FeatureLayer.MODE_ONDEMAND, outFields: ["*"]});
+		var stateList = new FeatureLayer(mapServicesRoot + "/Sensors/MapServer/8", { mode: FeatureLayer.MODE_ONDEMAND, outFields: ["*"]});
 
-		var countyList = new FeatureLayer("http://ec2-54-83-136-99.compute-1.amazonaws.com:6080/arcgis/rest/services/STN/Sensors/MapServer/10", { mode: FeatureLayer.MODE_ONDEMAND, outFields: ["*"]});
+		var countyList = new FeatureLayer(mapServicesRoot + "/Sensors/MapServer/10", { mode: FeatureLayer.MODE_ONDEMAND, outFields: ["*"]});
 		
 		var eventQuery = new Query();
 		eventQuery.where = "EVENT_NAME IS NOT null";
@@ -141,6 +155,7 @@ require([
 			  
 			  //dijit.byId("eventSelectInput").set("store", eventStore);
 			  domAttr.set(registry.byId("eventSelectInput"), "store", eventStore);
+			  console.log("whut");
 		}); 
 
 		var stateQuery = new Query();
@@ -211,7 +226,7 @@ require([
 				}
 			}
 
-			var selectionQueryTask = new QueryTask("http://ec2-54-83-136-99.compute-1.amazonaws.com:6080/arcgis/rest/services/STN/HWMs/MapServer/0");
+			var selectionQueryTask = new QueryTask(mapServicesRoot + "/Sensors/MapServer/0");
 			var selectionQuery = new Query();
 
 			selectionQuery.returnGeometry = true;
@@ -238,7 +253,7 @@ require([
 			// 	console.log(error);
 			// }
 				
-			var noRecordsQueryTask = new QueryTask("http://ec2-54-83-136-99.compute-1.amazonaws.com:6080/arcgis/rest/services/STN/HWMs/MapServer/0");
+			var noRecordsQueryTask = new QueryTask(mapServicesRoot + "/Sensors/MapServer/0");
 			var noRecordsQuery = new Query();
 			
 			noRecordsQuery.where = filterDefinition[0];
@@ -576,7 +591,7 @@ require([
 					if (map.layerIds[i].match(/stormTide/g) !== null) {
 						if (map.getLayer(map.layerIds[i]).visible === true) {
 			
-							var identifyInstrument = new IdentifyTask("http://ec2-54-83-136-99.compute-1.amazonaws.com:6080/arcgis/rest/services/STN/StormTide/MapServer");
+							var identifyInstrument = new IdentifyTask(mapServicesRoot + "/StormTide/MapServer");
 						
 							identifyParams = new IdentifyParameters();
 							identifyParams.tolerance =5;
@@ -587,6 +602,8 @@ require([
 							identifyParams.height = map.height;
 							identifyParams.geometry = evt.mapPoint;
 							identifyParams.mapExtent = map.extent;
+                            identifyParams.layerDefinitions = [];
+                            identifyParams.layerDefinitions[0] = filterDefinition[0];
 							identifyInstrument.execute(identifyParams, function(identifyResults){ 
 
 								if (identifyResults.length > 0) { 
@@ -619,7 +636,7 @@ require([
 										"<b>State</b>: " + instrumentState +"<br/></p>" +
 										"<p><b>Latitude</b>: " + point[1].toFixed(3) +
 										"</br><b>Longitude</b>: " + point[0].toFixed(3) +"<br/></p>" +
-										"<b><a target=\"blank\" href=\"http://wimcloud.usgs.gov/STNWeb/Public/SensorInfoPage?siteId=" + siteId + "&sensorId=" + instrumentId + " \">Link to data page</a></b>");
+										"<b><a target=\"blank\" href=" + sensorPageURLRoot + siteId + "&sensorId=" + instrumentId + " \">Link to data page</a></b>");
 										
 									map.infoWindow.show(evt.mapPoint,map.getInfoWindowAnchor(evt.screenPoint));
 								}
@@ -633,7 +650,7 @@ require([
 					if (map.layerIds[i].match(/met/g) !== null) {
 						if (map.getLayer(map.layerIds[i]).visible === true) {
 			
-							var identifyInstrument = new IdentifyTask("http://ec2-54-83-136-99.compute-1.amazonaws.com:6080/arcgis/rest/services/STN/Meteorological/MapServer");
+							var identifyInstrument = new IdentifyTask(mapServicesRoot + "/Meteorological/MapServer");
 						
 							identifyParams = new IdentifyParameters();
 							identifyParams.tolerance =5;
@@ -644,6 +661,8 @@ require([
 							identifyParams.height = map.height;
 							identifyParams.geometry = evt.mapPoint;
 							identifyParams.mapExtent = map.extent;
+                            identifyParams.layerDefinitions = [];
+                            identifyParams.layerDefinitions[0] = filterDefinition[0];
 							identifyInstrument.execute(identifyParams, function(identifyResults){ 
 
 								if (identifyResults.length > 0) { 
@@ -676,7 +695,7 @@ require([
 										"<b>State</b>: " + instrumentState +"<br/></p>" +
 										"<p><b>Latitude</b>: " + point[1].toFixed(3) +
 										"</br><b>Longitude</b>: " + point[0].toFixed(3) +"<br/></p>" +
-										"<b><a target=\"blank\" href=\"http://wimcloud.usgs.gov/STNWeb/Public/SensorInfoPage?siteId=" + siteId + "&sensorId=" + instrumentId + " \">Link to data page</a></b>");
+                                        "<b><a target=\"blank\" href=" + sensorPageURLRoot + siteId + "&sensorId=" + instrumentId + " \">Link to data page</a></b>");
 										
 									map.infoWindow.show(evt.mapPoint,map.getInfoWindowAnchor(evt.screenPoint));
 								}
@@ -689,7 +708,7 @@ require([
 					if (map.layerIds[i].match(/baro/g) !== null) {
 						if (map.getLayer(map.layerIds[i]).visible === true) {
 			
-							var identifyInstrument = new IdentifyTask("http://ec2-54-83-136-99.compute-1.amazonaws.com:6080/arcgis/rest/services/STN/Barometric/MapServer");
+							var identifyInstrument = new IdentifyTask(mapServicesRoot + "/Barometric/MapServer");
 						
 							identifyParams = new IdentifyParameters();
 							identifyParams.tolerance =5;
@@ -700,6 +719,8 @@ require([
 							identifyParams.height = map.height;
 							identifyParams.geometry = evt.mapPoint;
 							identifyParams.mapExtent = map.extent;
+                            identifyParams.layerDefinitions = [];
+                            identifyParams.layerDefinitions[0] = filterDefinition[0];
 							identifyInstrument.execute(identifyParams, function(identifyResults){ 
 
 								if (identifyResults.length > 0){
@@ -732,7 +753,7 @@ require([
 										"<b>State</b>: " + instrumentState +"<br/></p>" +
 										"<p><b>Latitude</b>: " + point[1].toFixed(3) +
 										"</br><b>Longitude</b>: " + point[0].toFixed(3) +"<br/></p>" +
-										"<b><a target=\"blank\" href=\"http://wimcloud.usgs.gov/STNWeb/Public/SensorInfoPage?siteId=" + siteId + "&sensorId=" + instrumentId + " \">Link to data page</a></b>");
+                                        "<b><a target=\"blank\" href=" + sensorPageURLRoot + siteId + "&sensorId=" + instrumentId + " \">Link to data page</a></b>");
 										
 									map.infoWindow.show(evt.mapPoint,map.getInfoWindowAnchor(evt.screenPoint));
 								}
@@ -746,7 +767,7 @@ require([
 					if (map.layerIds[i].match(/waveHt/g) !== null) {
 						if (map.getLayer(map.layerIds[i]).visible === true) {
 			
-							var identifyInstrument = new IdentifyTask("http://ec2-54-83-136-99.compute-1.amazonaws.com:6080/arcgis/rest/services/STN/WaveHeight/MapServer");
+							var identifyInstrument = new IdentifyTask(mapServicesRoot + "/WaveHeight/MapServer");
 						
 							identifyParams = new IdentifyParameters();
 							identifyParams.tolerance =5;
@@ -757,6 +778,8 @@ require([
 							identifyParams.height = map.height;
 							identifyParams.geometry = evt.mapPoint;
 							identifyParams.mapExtent = map.extent;
+                            identifyParams.layerDefinitions = [];
+                            identifyParams.layerDefinitions[0] = filterDefinition[0];
 							identifyInstrument.execute(identifyParams, function(identifyResults){ 
 					
 								if (identifyResults.length > 0){
@@ -789,7 +812,7 @@ require([
 										"<b>State</b>: " + instrumentState +"<br/></p>" +
 										"<p><b>Latitude</b>: " + point[1].toFixed(3) +
 										"</br><b>Longitude</b>: " + point[0].toFixed(3) +"<br/></p>" +
-										"<b><a target=\"blank\" href=\"http://107.20.206.65/STNWeb/Public/SensorInfoPage?siteId=" + siteId + "&sensorId=" + instrumentId + " \">Link to data page</a></b>");
+                                        "<b><a target=\"blank\" href=" + sensorPageURLRoot + siteId + "&sensorId=" + instrumentId + " \">Link to data page</a></b>");
 										
 									map.infoWindow.show(evt.mapPoint,map.getInfoWindowAnchor(evt.screenPoint));
 								}
@@ -803,7 +826,7 @@ require([
 					if (map.layerIds[i].match(/rapidDeploy/g) !== null) {
 						if (map.getLayer(map.layerIds[i]).visible === true) {
 			
-							var identifyInstrument = new IdentifyTask("http://ec2-54-83-136-99.compute-1.amazonaws.com:6080/arcgis/rest/services/STN/RapidDeployGage/MapServer");
+							var identifyInstrument = new IdentifyTask(mapServicesRoot + "/RapidDeployGage/MapServer");
 						
 							identifyParams = new IdentifyParameters();
 							identifyParams.tolerance =5;
@@ -814,6 +837,8 @@ require([
 							identifyParams.height = map.height;
 							identifyParams.geometry = evt.mapPoint;
 							identifyParams.mapExtent = map.extent;
+                            identifyParams.layerDefinitions = [];
+                            identifyParams.layerDefinitions[0] = filterDefinition[0];
 							identifyInstrument.execute(identifyParams, function(identifyResults){ 
 
 								if (identifyResults.length > 0) {
@@ -846,7 +871,7 @@ require([
 										"<b>State</b>: " + instrumentState +"<br/></p>" +
 										"<p><b>Latitude</b>: " + point[1].toFixed(3) +
 										"</br><b>Longitude</b>: " + point[0].toFixed(3) +"<br/></p>" +
-										"<b><a target=\"blank\" href=\"http://wimcloud.usgs.gov/STNWeb/Public/SensorInfoPage?siteId=" + siteId + "&sensorId=" + instrumentId + " \">Link to data page</a></b>");
+                                        "<b><a target=\"blank\" href=" + sensorPageURLRoot + siteId + "&sensorId=" + instrumentId + " \">Link to data page</a></b>");
 										
 									map.infoWindow.show(evt.mapPoint,map.getInfoWindowAnchor(evt.screenPoint));
 
@@ -862,7 +887,7 @@ require([
 					if (map.layerIds[i].match(/peaks/g) !== null) {
 						if (map.getLayer(map.layerIds[i]).visible === true) {
 							
-							var identifyPeak = new IdentifyTask("http://ec2-54-83-136-99.compute-1.amazonaws.com:6080/arcgis/rest/services/STN/Peaks/MapServer");
+							var identifyPeak = new IdentifyTask(mapServicesRoot + "/Peaks/MapServer");
 					
 							identifyParams = new IdentifyParameters();
 							identifyParams.tolerance = 5;
@@ -873,6 +898,8 @@ require([
 							identifyParams.height = map.height;
 							identifyParams.geometry = evt.mapPoint;
 							identifyParams.mapExtent = map.extent;
+                            identifyParams.layerDefinitions = [];
+                            identifyParams.layerDefinitions[0] = filterDefinition[0];
 							identifyPeak.execute(identifyParams, function(identifyResults){ 
 
 								if (identifyResults.length > 0) {
@@ -904,7 +931,7 @@ require([
 					if (map.layerIds[i].match(/HWMs/g) !== null) {
 						if (map.getLayer(map.layerIds[i]).visible === true) {
 							
-							var identifyHWM = new IdentifyTask("http://ec2-54-83-136-99.compute-1.amazonaws.com:6080/arcgis/rest/services/STN/HWMs/MapServer");
+							var identifyHWM = new IdentifyTask(mapServicesRoot + "/HWMs/MapServer");
 					
 							identifyParams = new IdentifyParameters();
 							identifyParams.tolerance = 5;
@@ -915,6 +942,8 @@ require([
 							identifyParams.height = map.height;
 							identifyParams.geometry = evt.mapPoint;
 							identifyParams.mapExtent = map.extent;
+                            identifyParams.layerDefinitions = [];
+                            identifyParams.layerDefinitions[0] = filterDefinition[0];
 							identifyHWM.execute(identifyParams, function(identifyResults){ 
 
 								if (identifyResults.length > 0) {
@@ -962,7 +991,7 @@ require([
 										"<p><b>Latitude</b>: " + point[1].toFixed(3) +
 										"</br><b>Longitude</b>: " + point[0].toFixed(3) +"<br/></p>" +
 										"<p><b>Notes</b>: " + notes +"<br/>" +
-										"<p><b><a target=\"blank\" href=\"http://wimcloud.usgs.gov/STNWeb/Public/HWMInfoPage?siteId=" + siteId + "&hwmId=" + hwmId + " \">Link to data page</a></b>");
+                                        "<b><a target=\"blank\" href=" + hwmPageURLRoot + siteId + "&hwmId=" + hwmId + " \">Link to data page</a></b>");
 			
 									map.infoWindow.show(evt.mapPoint,map.getInfoWindowAnchor(evt.screenPoint));
 
