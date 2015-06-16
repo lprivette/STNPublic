@@ -39,12 +39,15 @@ require([
   "esri/tasks/QueryTask",
   "esri/graphicsUtils",
   "esri/geometry/Point",
+  "esri/layers/FeatureLayer",
   "dijit/registry",
   "dojo/_base/array",
   "dojo/dom-attr",
+  "dojo/data/ItemFileReadStore",
   "dijit/layout/BorderContainer",
   "dijit/TitlePane",
   "dijit/layout/ContentPane",
+  "dijit/form/FilteringSelect",
   "dojo/dom-style",
   "dojo/dom-construct",
   "dojo/domReady!"
@@ -62,12 +65,15 @@ require([
   QueryTask,
   graphicsUtils,
   Point,
+  FeatureLayer,
   registry,
   array,
   domAttr,
+  ItemFileReadStore,
   BorderContainer,
   TitlePane,
   ContentPane,
+  FilteringSelect,
   domStyle,
   domConstruct) {
 
@@ -101,117 +107,91 @@ require([
 	}, "basemapGallery");
 	basemapGallery.startup();
 
-	require([
-	  "esri/tasks/query",
-	  "esri/layers/FeatureLayer",
-	  "dojo/data/ItemFileReadStore",
-	  "dojo/ready",
-      "dijit/layout/BorderContainer",
-      "dijit/layout/ContentPane",
-      "dijit/form/FilteringSelect",
-      "dijit/TitlePane",
-      "dijit/Dialog",
-      "dijit/form/Button"
-	], function(
-	  Query,
-	  FeatureLayer,
-	  ItemFileReadStore,
-	  BorderContainer,
-      ContentPane,
-      FilteringSelect,
-      TitlePane,
-      Dialog,
-      Button
-      ) {
+    ///tables for sensors filter
+    var eventList = new FeatureLayer(mapServicesRoot + "/Sensors/MapServer/9", { mode: FeatureLayer.MODE_ONDEMAND, outFields: ["*"]});
+
+    var stateList = new FeatureLayer(mapServicesRoot + "/Sensors/MapServer/8", { mode: FeatureLayer.MODE_ONDEMAND, outFields: ["*"]});
+
+    var countyList = new FeatureLayer(mapServicesRoot + "/Sensors/MapServer/10", { mode: FeatureLayer.MODE_ONDEMAND, outFields: ["*"]});
+
+    var eventQuery = new Query();
+    eventQuery.where = "EVENT_NAME IS NOT null";
+    eventList.queryFeatures(eventQuery, function(featureSet) {
+        var eventFilterValues = array.map(featureSet.features, function(feature) {
+            return {
+                eventName: feature.attributes.EVENT_NAME
+            };
+        });
+
+        eventFilterValues.unshift( new Object ({eventName: " All"}));
+
+        var eventDataItems = {
+            identifier: 'eventName',
+            label: 'eventName',
+            items: eventFilterValues
+        };
+
+        var eventStore = new ItemFileReadStore({
+            data: eventDataItems
+        });
+
+        var eventSelect = registry.byId("eventSelectInput");
+        domAttr.set(eventSelect, "store", eventStore);
+    });
+
+    var stateQuery = new Query();
+    stateQuery.where = "STATE IS NOT null";
+    stateList.queryFeatures(stateQuery, function(featureSet) {
+        var stateFilterValues = array.map(featureSet.features, function(feature) {
+            return {
+                stateOption: feature.attributes.STATE
+            };
+        });
+
+        stateFilterValues.unshift( new Object ({stateOption: " All"}));
+
+        var stateDataItems = {
+            identifier: 'stateOption',
+            label: 'stateOption',
+            items: stateFilterValues
+        };
+
+        var stateStore = new ItemFileReadStore({
+            data: stateDataItems
+        });
+
+        //dijit.byId("stateSelectInput").set("store", stateStore);
+        domAttr.set(registry.byId("stateSelectInput"), "store", stateStore);
+
+    });
+    var countyQuery = new Query();
+    countyQuery.where = "COUNTY IS NOT null";
+
+    countyList.queryFeatures(countyQuery, function(featureSet) {
+        var countyFilterValues = array.map(featureSet.features, function(feature) {
+            return {
+                countyOption: feature.attributes.COUNTY
+            };
+        });
+
+        countyFilterValues.unshift( new Object ({countyOption: " All"}));
+
+        var countyDataItems = {
+            identifier: 'countyOption',
+            label: 'countyOption',
+            items: countyFilterValues
+        };
+
+        var countyStore = new ItemFileReadStore({
+            data: countyDataItems
+        });
+
+        //dijit.byId("countySelectInput").set("store", countyStore);
+        domAttr.set(registry.byId("countySelectInput"), "store", countyStore);
+
+    });
 
 
-		///tables for sensors filter
-		var eventList = new FeatureLayer(mapServicesRoot + "/Sensors/MapServer/9", { mode: FeatureLayer.MODE_ONDEMAND, outFields: ["*"]});
-
-		var stateList = new FeatureLayer(mapServicesRoot + "/Sensors/MapServer/8", { mode: FeatureLayer.MODE_ONDEMAND, outFields: ["*"]});
-
-		var countyList = new FeatureLayer(mapServicesRoot + "/Sensors/MapServer/10", { mode: FeatureLayer.MODE_ONDEMAND, outFields: ["*"]});
-		
-		var eventQuery = new Query();
-		eventQuery.where = "EVENT_NAME IS NOT null";
-		eventList.queryFeatures(eventQuery, function(featureSet) {
-	          var eventFilterValues = array.map(featureSet.features, function(feature) {
-	            return {
-	              eventName: feature.attributes.EVENT_NAME
-	            };
-	          });
-			  
-			  eventFilterValues.unshift( new Object ({eventName: " All"}));
-			  
-			  var eventDataItems = {
-			  	identifier: 'eventName',
-				label: 'eventName',
-				items: eventFilterValues
-			  };
-			   
-			  var eventStore = new ItemFileReadStore({
-			  	data: eventDataItems
-			  });
-			  
-			  //dijit.byId("eventSelectInput").set("store", eventStore);
-			  domAttr.set(registry.byId("eventSelectInput"), "store", eventStore);
-			  console.log("whut");
-		}); 
-
-		var stateQuery = new Query();
-		stateQuery.where = "STATE IS NOT null";
-		stateList.queryFeatures(stateQuery, function(featureSet) {
-	          var stateFilterValues = array.map(featureSet.features, function(feature) {
-	            return {
-	              stateOption: feature.attributes.STATE
-	            };
-	          });
-			  
-			  stateFilterValues.unshift( new Object ({stateOption: " All"}));
-			  
-			  var stateDataItems = {
-			  	identifier: 'stateOption',
-				label: 'stateOption',
-				items: stateFilterValues
-			  };
-			   
-			  var stateStore = new ItemFileReadStore({
-			  	data: stateDataItems
-			  });
-			  
-			  //dijit.byId("stateSelectInput").set("store", stateStore);
-			  domAttr.set(registry.byId("stateSelectInput"), "store", stateStore);
-
-		}); 
-		var countyQuery = new Query();
-		countyQuery.where = "COUNTY IS NOT null";
-		
-		countyList.queryFeatures(countyQuery, function(featureSet) {
-	          var countyFilterValues = array.map(featureSet.features, function(feature) {
-	            return {
-	              countyOption: feature.attributes.COUNTY
-	            };
-	          });
-			  
-			  countyFilterValues.unshift( new Object ({countyOption: " All"}));
-			  
-			  var countyDataItems = {
-			  	identifier: 'countyOption',
-				label: 'countyOption',
-				items: countyFilterValues
-			  };
-			   
-			  var countyStore = new ItemFileReadStore({
-			  	data: countyDataItems
-			  });
-			  
-			  //dijit.byId("countySelectInput").set("store", countyStore);
-			  domAttr.set(registry.byId("countySelectInput"), "store", countyStore);
-
-		}); 
-	});
-		/////end of a require statement
-		///////////////////////////////////////////////////////////////////////////////////////
 
 
 	var executeFilterHandler = on(dom.byId("sensorSubmitButton"), "click", function(){
