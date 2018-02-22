@@ -4,7 +4,7 @@
     "organization": "U.S. Geological Survey",
     "description": "Flood Event Viewer v1 for short-term network (STN) database (formerly STN public)",
     "version": "v1.0.0",
-    "status": "Archival"
+    "status": "Archival",
 
     "permissions": {
       "usageType": "openSource",
